@@ -17,9 +17,15 @@ import java.util.Set;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class User {
 
+    //Возможно стоит добавить поле PASSWORD???
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
+
+    @Column(name = "login", nullable = false, unique = true)
+    String login;
+
 
     @Column(name = "name", nullable = false)
     String name;
@@ -29,7 +35,7 @@ public class User {
 
     @Column(name = "account_balance", nullable = false)
     @Min(0)
-    Double accountBalance;
+    Long accountBalance;
 
     @OneToMany
     @JoinColumn(name = "user_id")
