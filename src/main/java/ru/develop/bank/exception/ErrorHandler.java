@@ -13,4 +13,16 @@ public class ErrorHandler {
     public ErrorResponse handleAlreadyExists(final RuntimeException exception) {
         return new ErrorResponse(exception.getMessage());
     }
+
+    @ExceptionHandler(NotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handleNotFound(final RuntimeException exception) {
+        return new ErrorResponse(exception.getMessage());
+    }
+
+    @ExceptionHandler(ValidationException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleValidation(final RuntimeException exception) {
+        return new ErrorResponse(exception.getMessage());
+    }
 }

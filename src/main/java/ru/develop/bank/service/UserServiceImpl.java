@@ -3,7 +3,10 @@ package ru.develop.bank.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.develop.bank.dto.NewUserDto;
+import ru.develop.bank.dto.UpdatedUserDto;
 import ru.develop.bank.exception.AlreadyExistsException;
+import ru.develop.bank.exception.NotFoundException;
+import ru.develop.bank.exception.ValidationException;
 import ru.develop.bank.mapper.UserMapper;
 import ru.develop.bank.model.Email;
 import ru.develop.bank.model.PhoneNumber;
@@ -28,7 +31,7 @@ public class UserServiceImpl implements UserService {
         List<String> phoneNumbers = newUserDto.getPhoneNumbers().stream().distinct().toList();
         for (String phoneNumber : phoneNumbers) {
             if (phoneNumberStorage.existsByPhoneNumber(phoneNumber)) {
-                throw new AlreadyExistsException("Номер телефона " + phoneNumber + " уже импользуется.");
+                throw new AlreadyExistsException("Номер телефона " + phoneNumber + " уже используется.");
             }
         }
 
@@ -56,5 +59,32 @@ public class UserServiceImpl implements UserService {
                         .build()
         ));
         return UserMapper.toUserDto(user, phoneNumbers, emails);
+    }
+
+    @Override
+    public UpdatedUserDto addPhoneNumber(Long userId, String phoneNumber) {
+        if (phoneNumber.isBlank()) {
+            throw new ValidationException("Номер телефона не может быть пустой строкой.");
+        }
+        User user = userStorage.findById(userId)
+                .orElseThrow(() -> new NotFoundException("Пользователя с id " + userId + " не существует."));
+
+        phoneNumberStorage.save(PhoneNumber.builder()
+                .user(user)
+                .phoneNumber(phoneNumber)
+                .build());
+
+        List<PhoneNumber> phoneNumbers = phoneNumberStorage.findAllByUserId(userId);
+        return UserMapper.toUpdatedUserDtoByPhone(userId, phoneNumbers);
+    }
+
+    @Override
+    public UpdatedUserDto updatePhoneNumber(Long userId, String previousPhoneNumber, String newPhoneNumber) {
+        return null;
+    }
+
+    @Override
+    public UpdatedUserDto deletePhoneNumber(Long userId, String phoneNumber) {
+        return null;
     }
 }

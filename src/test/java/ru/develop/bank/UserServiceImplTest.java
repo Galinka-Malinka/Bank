@@ -8,7 +8,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import ru.develop.bank.dto.NewUserDto;
+import ru.develop.bank.dto.UpdatedUserDto;
 import ru.develop.bank.exception.AlreadyExistsException;
+import ru.develop.bank.exception.NotFoundException;
+import ru.develop.bank.exception.ValidationException;
 import ru.develop.bank.model.Email;
 import ru.develop.bank.model.PhoneNumber;
 import ru.develop.bank.model.User;
@@ -72,7 +75,7 @@ public class UserServiceImplTest {
         assertThat(savedEmails.get(1).getEmail(), equalTo(emails.get(1)));
 
         assertThrows(AlreadyExistsException.class, () -> userService.create(newUserDto),
-                "Номер телефона " + phoneNumbers.get(0) + " уже импользуется.");
+                "Номер телефона " + phoneNumbers.get(0) + " уже используется.");
         newUserDto.setPhoneNumbers(List.of("+73332221100"));
         assertThrows(AlreadyExistsException.class, () -> userService.create(newUserDto),
                 "Email " + emails.get(0) + " уже используется.");
@@ -81,4 +84,31 @@ public class UserServiceImplTest {
                 "Пользователь с логином " + newUserDto.getLogin() + " уже существует.");
     }
 
+    @Test
+    void shouldUpdateTheUsersPhoneNumber() {
+        List<String> phoneNumbers = List.of("+79998887766", "+75554443322");
+        List<String> emails = List.of("Email@mail.ru", "Gmail@gmail.ru");
+        NewUserDto newUserDto = NewUserDto.builder()
+                .login("Login")
+                .name("Name and LastName")
+                .birthday(LocalDate.of(1990, 01, 01))
+                .accountBalance(1000L)
+                .emails(emails)
+                .phoneNumbers(phoneNumbers)
+                .build();
+
+        userService.create(newUserDto);
+        UpdatedUserDto updateResult = userService.addPhoneNumber(1L, "+71112223344");
+
+        assertThat(updateResult, notNullValue());
+        assertThat(updateResult.getPhoneNumbers().size(), is(3));
+        assertThat(updateResult.getPhoneNumbers().get(2), equalTo("+71112223344"));
+
+        assertThrows(NotFoundException.class, () -> userService.addPhoneNumber(2L, "+71112223344"),
+                "Пользователя с id 2L не существует.");
+        assertThrows(ValidationException.class, () -> userService.addPhoneNumber(1L, ""),
+                "Номер телефона не может быть пустой строкой.");
+
+
+    }
 }
