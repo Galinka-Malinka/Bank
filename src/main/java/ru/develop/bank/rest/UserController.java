@@ -6,8 +6,6 @@ import org.springframework.web.bind.annotation.*;
 import ru.develop.bank.dto.UpdatedUserDto;
 import ru.develop.bank.service.UserService;
 
-import javax.validation.constraints.NotBlank;
-
 @RestController
 @RequiredArgsConstructor
 @RequestMapping(path = "/user")
@@ -20,6 +18,15 @@ public class UserController {
                                          @RequestParam(value = "phone") String phoneNumber) {
         log.info("Добавление пользователю с id {} номера телефона: {}", userId, phoneNumber);
         return userService.addPhoneNumber(userId, phoneNumber);
+    }
+
+    @PatchMapping("/{userId}/phone")
+    public UpdatedUserDto updatePhoneNumber(@PathVariable Long userId,
+                                            @RequestParam(value = "previous") String previousPhoneNumber,
+                                            @RequestParam(value = "new") String newPhoneNumber) {
+        log.info("Обновление у пользователя с id {} номера телефона {} на {}",
+                userId, previousPhoneNumber, newPhoneNumber);
+        return userService.updatePhoneNumber(userId, previousPhoneNumber, newPhoneNumber);
     }
 
 }

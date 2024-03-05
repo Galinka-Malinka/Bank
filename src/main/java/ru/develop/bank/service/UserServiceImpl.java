@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import ru.develop.bank.dto.NewUserDto;
 import ru.develop.bank.dto.UpdatedUserDto;
 import ru.develop.bank.exception.AlreadyExistsException;
+import ru.develop.bank.exception.ConflictException;
 import ru.develop.bank.exception.NotFoundException;
 import ru.develop.bank.exception.ValidationException;
 import ru.develop.bank.mapper.UserMapper;
@@ -30,9 +31,7 @@ public class UserServiceImpl implements UserService {
 
         List<String> phoneNumbers = newUserDto.getPhoneNumbers().stream().distinct().toList();
         for (String phoneNumber : phoneNumbers) {
-            if (phoneNumberStorage.existsByPhoneNumber(phoneNumber)) {
-                throw new AlreadyExistsException("Номер телефона " + phoneNumber + " уже используется.");
-            }
+            checkNewPhoneNumber(phoneNumber);
         }
 
         List<String> emails = newUserDto.getEmails().stream().distinct().toList();
@@ -63,9 +62,9 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UpdatedUserDto addPhoneNumber(Long userId, String phoneNumber) {
-        if (phoneNumber.isBlank()) {
-            throw new ValidationException("Номер телефона не может быть пустой строкой.");
-        }
+
+        checkNewPhoneNumber(phoneNumber);
+
         User user = userStorage.findById(userId)
                 .orElseThrow(() -> new NotFoundException("Пользователя с id " + userId + " не существует."));
 
@@ -80,11 +79,45 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UpdatedUserDto updatePhoneNumber(Long userId, String previousPhoneNumber, String newPhoneNumber) {
-        return null;
+        checkNewPhoneNumber(newPhoneNumber);
+        checkExistingPhoneNumber(previousPhoneNumber);
+        if (!userStorage.existsById(userId)) {
+            throw new NotFoundException("Пользователя с id " + userId + " не существует.");
+        }
+        PhoneNumber phoneNumber = phoneNumberStorage.findByPhoneNumber(previousPhoneNumber);
+        if (!phoneNumber.getUser().getId().equals(userId)) {
+            throw new ConflictException("Пользователь с id " + userId + " не может обновить номер телефона " +
+                    previousPhoneNumber + " т.к. не является его владельцем.");
+        }
+        phoneNumberStorage.setPhoneNumber(newPhoneNumber, phoneNumber.getId());
+        /* Аналог:
+               phoneNumber.setPhoneNumber(newPhoneNumber);
+               phoneNumberStorage.save(phoneNumber);*/
+        List<PhoneNumber> phoneNumbers = phoneNumberStorage.findAllByUserId(userId);
+        return UserMapper.toUpdatedUserDtoByPhone(userId, phoneNumbers);
     }
 
     @Override
     public UpdatedUserDto deletePhoneNumber(Long userId, String phoneNumber) {
         return null;
     }
+
+    public void checkNewPhoneNumber(String phoneNumber) {
+        if (phoneNumber.isBlank()) {
+            throw new ValidationException("Номер телефона не может быть пустой строкой.");
+        }
+        if (phoneNumberStorage.existsByPhoneNumber(phoneNumber)) {
+            throw new AlreadyExistsException("Номер телефона " + phoneNumber + " уже используется.");
+        }
+    }
+
+    public void checkExistingPhoneNumber(String phoneNumber) {
+        if (phoneNumber.isBlank()) {
+            throw new ValidationException("Номер телефона не может быть пустой строкой.");
+        }
+        if (!phoneNumberStorage.existsByPhoneNumber(phoneNumber)) {
+            throw new NotFoundException("Номер телефона " + phoneNumber + " не найден.");
+        }
+    }
+
 }

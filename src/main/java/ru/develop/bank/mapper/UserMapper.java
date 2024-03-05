@@ -11,7 +11,6 @@ import ru.develop.bank.model.User;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Component
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -39,29 +38,23 @@ public class UserMapper {
     }
 
     public static UpdatedUserDto toUpdatedUserDtoByPhone(Long userId, List<PhoneNumber> phoneNumbers) {
-//            List<String> phoneNumbersList = new ArrayList<>();
-//            for (PhoneNumber phoneNumber: phoneNumbers) {
-//                phoneNumbersList.add(phoneNumber.getPhoneNumber());
-//            }
-//
-//            List<String> list = phoneNumbers.stream().map(PhoneNumber::getPhoneNumber).toList();
-            return UpdatedUserDto.builder()
-                    .id(userId)
-                    .phoneNumbers(phoneNumbers.stream().map(PhoneNumber::getPhoneNumber).toList())
-                    .build();
+        return UpdatedUserDto.builder()
+                .id(userId)
+                .phoneNumbers(phoneNumbers.stream().map(PhoneNumber::getPhoneNumber).toList())
+                .build();
 
     }
 
     public static UpdatedUserDto toUpdatedUserDtoByEmail(Long userId, List<Email> emails) {
 
-            List<String> emailsList = new ArrayList<>();
-            for (Email email: emails) {
-                emailsList.add(email.getEmail());
-            }
-            return UpdatedUserDto.builder()
-                    .id(userId)
-                    .emails(emailsList)
-                    .build();
+        List<String> emailsList = new ArrayList<>();
+        for (Email email : emails) {
+            emailsList.add(email.getEmail());
+        }
+        return UpdatedUserDto.builder()
+                .id(userId)
+                .emails(emailsList)
+                .build();
 
     }
 

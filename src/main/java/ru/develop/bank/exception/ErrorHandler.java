@@ -25,4 +25,10 @@ public class ErrorHandler {
     public ErrorResponse handleValidation(final RuntimeException exception) {
         return new ErrorResponse(exception.getMessage());
     }
+
+    @ExceptionHandler(ConflictException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ErrorResponse handleConflict(final RuntimeException exception) {
+        return new ErrorResponse(exception.getMessage());
+    }
 }
