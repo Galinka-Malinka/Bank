@@ -11,7 +11,7 @@ public interface UserService {
 
     UpdatedUserDto updatePhoneNumber(Long userId, String previousPhoneNumber, String newPhoneNumber);
 
-    UpdatedUserDto deletePhoneNumber(Long userId, String phoneNumber);
+    void deletePhoneNumber(Long userId, String phoneNumber);
 
 
 }

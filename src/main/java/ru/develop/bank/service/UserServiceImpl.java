@@ -81,14 +81,9 @@ public class UserServiceImpl implements UserService {
     public UpdatedUserDto updatePhoneNumber(Long userId, String previousPhoneNumber, String newPhoneNumber) {
         checkNewPhoneNumber(newPhoneNumber);
         checkExistingPhoneNumber(previousPhoneNumber);
-        if (!userStorage.existsById(userId)) {
-            throw new NotFoundException("Пользователя с id " + userId + " не существует.");
-        }
+        checkTheExistenceOfTheUser(userId);
         PhoneNumber phoneNumber = phoneNumberStorage.findByPhoneNumber(previousPhoneNumber);
-        if (!phoneNumber.getUser().getId().equals(userId)) {
-            throw new ConflictException("Пользователь с id " + userId + " не может обновить номер телефона " +
-                    previousPhoneNumber + " т.к. не является его владельцем.");
-        }
+        checkThePhoneOwner(userId, phoneNumber);
         phoneNumberStorage.setPhoneNumber(newPhoneNumber, phoneNumber.getId());
         /* Аналог:
                phoneNumber.setPhoneNumber(newPhoneNumber);
@@ -98,8 +93,12 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UpdatedUserDto deletePhoneNumber(Long userId, String phoneNumber) {
-        return null;
+    public void deletePhoneNumber(Long userId, String phoneNumber) {
+        checkTheExistenceOfTheUser(userId);
+        checkExistingPhoneNumber(phoneNumber);
+        PhoneNumber phoneNumberBeingDeleted = phoneNumberStorage.findByPhoneNumber(phoneNumber);
+        checkThePhoneOwner(userId, phoneNumberBeingDeleted);
+        phoneNumberStorage.delete(phoneNumberBeingDeleted);
     }
 
     public void checkNewPhoneNumber(String phoneNumber) {
@@ -117,6 +116,19 @@ public class UserServiceImpl implements UserService {
         }
         if (!phoneNumberStorage.existsByPhoneNumber(phoneNumber)) {
             throw new NotFoundException("Номер телефона " + phoneNumber + " не найден.");
+        }
+    }
+
+    public void checkThePhoneOwner(Long userId, PhoneNumber phoneNumber) {
+        if (!phoneNumber.getUser().getId().equals(userId)) {
+            throw new ConflictException("Пользователь с id " + userId + " не может обновить номер телефона " +
+                    phoneNumber.getPhoneNumber() + " т.к. не является его владельцем.");
+        }
+    }
+
+    public void checkTheExistenceOfTheUser(Long userId) {
+        if (!userStorage.existsById(userId)) {
+            throw new NotFoundException("Пользователя с id " + userId + " не существует.");
         }
     }
 

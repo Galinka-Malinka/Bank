@@ -2,6 +2,7 @@ package ru.develop.bank.rest;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.develop.bank.dto.UpdatedUserDto;
 import ru.develop.bank.service.UserService;
@@ -29,4 +30,11 @@ public class UserController {
         return userService.updatePhoneNumber(userId, previousPhoneNumber, newPhoneNumber);
     }
 
+    @DeleteMapping("/{userId}/phone")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deletePhoneNumber(@PathVariable Long userId,
+                                  @RequestParam(value = "phone") String phoneNumber) {
+        log.info("Удаление пользователем с id {} телефона {}", userId, phoneNumber);
+        userService.deletePhoneNumber(userId, phoneNumber);
+    }
 }

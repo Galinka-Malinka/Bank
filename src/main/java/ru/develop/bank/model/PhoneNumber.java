@@ -19,6 +19,7 @@ public class PhoneNumber {
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id")
+    //@ToString.Exclude
     User user;
 
     @Column(name = "phone_number", nullable = false, unique = true)

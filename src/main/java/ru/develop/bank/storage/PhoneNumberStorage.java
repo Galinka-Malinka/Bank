@@ -20,6 +20,4 @@ public interface PhoneNumberStorage extends JpaRepository<PhoneNumber, Integer> 
     @Query("update PhoneNumber as p set p.phoneNumber = ?1 where p.id = ?2")
     void setPhoneNumber(String newPhoneNumber, Integer phoneNumberId);
 
-
-    void deleteByPhoneNumber(String phoneNumber);
 }

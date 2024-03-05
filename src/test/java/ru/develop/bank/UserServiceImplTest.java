@@ -135,6 +135,23 @@ public class UserServiceImplTest {
                         " т.к. не является его владельцем.");
     }
 
+    @Test
+    void shouldDeletePhoneNumber() {
+        NewUserDto newUserDto = createUser();
+        String phoneNumber = newUserDto.getPhoneNumbers().get(0);
+        userService.deletePhoneNumber(1L, phoneNumber);
+        TypedQuery<PhoneNumber> query = entityManager
+                .createQuery("Select p from PhoneNumber p join p.user u where u.id = :id", PhoneNumber.class);
+        List<PhoneNumber> phoneNumbers = query.setParameter("id", 1).getResultList();
+        assertThat(phoneNumbers.size(), is(1));
+        assertThat(phoneNumbers.get(0).getPhoneNumber(), equalTo(newUserDto.getPhoneNumbers().get(1)));
+
+        assertThrows(NotFoundException.class, () ->
+                userService.deletePhoneNumber(2L, newUserDto.getPhoneNumbers().get(1)),
+                "Пользователя с id 2 не существует.");
+
+    }
+
     public NewUserDto createUser() {
         NewUserDto newUserDto = NewUserDto.builder()
                 .login("Login")
