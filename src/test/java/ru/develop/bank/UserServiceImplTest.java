@@ -147,8 +147,27 @@ public class UserServiceImplTest {
         assertThat(phoneNumbers.get(0).getPhoneNumber(), equalTo(newUserDto.getPhoneNumbers().get(1)));
 
         assertThrows(NotFoundException.class, () ->
-                userService.deletePhoneNumber(2L, newUserDto.getPhoneNumbers().get(1)),
+                        userService.deletePhoneNumber(2L, newUserDto.getPhoneNumbers().get(1)),
                 "Пользователя с id 2 не существует.");
+        assertThrows(ConflictException.class, () -> userService.deletePhoneNumber(1L, newUserDto.getPhoneNumbers().get(1)),
+                "Нельзя удалять единственный номер телефона пользователя.");
+    }
+
+    @Test
+    void shouldAddEmail() {
+        createUser();
+        UpdatedUserDto updateResult = userService.addEmail(1L, "NewEmail@mail.ru");
+
+        assertThat(updateResult, notNullValue());
+        assertThat(updateResult.getEmails().size(), is(3));
+        assertThat(updateResult.getEmails().get(2), equalTo("NewEmail@mail.ru"));
+
+        assertThrows(AlreadyExistsException.class, () -> userService.addEmail(1L, "NewEmail@mail.ru"),
+                "Email NewEmail@mail.ru уже используется.");
+        assertThrows(ValidationException.class, () -> userService.addEmail(1L, ""),
+                "Email не может быть пустой строкой.");
+        assertThrows(NotFoundException.class, () -> userService.addEmail(2L, "NewEmail2@mail.ru"),
+                "Пользователя с id 2L не существует.");
 
     }
 
@@ -165,5 +184,64 @@ public class UserServiceImplTest {
         userService.create(newUserDto);
         newUserDto.setId(1L);
         return newUserDto;
+    }
+
+    @Test
+    void shouldUpdateEmail() {
+        NewUserDto newUserDto = createUser();
+
+        UpdatedUserDto updatedUserDto = userService.updateEmail(1L, newUserDto.getEmails().get(0),
+                "NewEmail@mail.ru");
+
+        assertThat(updatedUserDto, notNullValue());
+        assertThat(updatedUserDto.getEmails().size(), is(2));
+        assertThat(updatedUserDto.getEmails().contains("NewEmail@mail.ru"), equalTo(true));
+        assertThat(updatedUserDto.getEmails().contains(newUserDto.getEmails().get(0)),
+                equalTo(false));
+
+        assertThrows(ValidationException.class, () -> userService.updateEmail(1L, newUserDto.getEmails().get(0),
+                ""), "Email не может быть пустой строкой.");
+        assertThrows(AlreadyExistsException.class, () -> userService.updateEmail(1L, newUserDto.getEmails().get(0),
+                "NewEmail@mail.ru"), "Email NewEmail@mail.ru уже используется.");
+        assertThrows(ValidationException.class, () -> userService.updateEmail(1L, "",
+                "NewEmail2@mail.ru"), "Email не может быть пустой строкой.");
+        assertThrows(NotFoundException.class, () -> userService.updateEmail(1L, "NotFound@mail.ru",
+                        "NewEmail2@mail.ru"),
+                "Email NotFound@mail.ru не найден.");
+        assertThrows(NotFoundException.class, () -> userService.updateEmail(2L, newUserDto.getEmails().get(0),
+                        "NewEmail3@mail.ru"),
+                "Пользователя с id 2 не существует.");
+
+        userService.create(NewUserDto.builder()
+                .login("Login2")
+                .name("Name2 and LastName2")
+                .birthday(LocalDate.of(1992, 1, 1))
+                .accountBalance(1000L)
+                .emails(List.of("NewMail@mail.ru"))
+                .phoneNumbers(List.of("+75846529966"))
+                .build());
+
+        assertThrows(ConflictException.class, () -> userService.updateEmail(2L, newUserDto.getEmails().get(1),
+                        "NewEmail3@mail.ru"),
+                "Пользователь с id 2 не может обновить email " + newUserDto.getEmails().get(1) +
+                        " т.к. не является его владельцем.");
+    }
+
+    @Test
+    void shouldDeleteEmail() {
+        NewUserDto newUserDto = createUser();
+        String email = newUserDto.getEmails().get(0);
+        userService.deleteEmail(1L, email);
+        TypedQuery<Email> query = entityManager
+                .createQuery("Select e from Email e join e.user u where u.id = :id", Email.class);
+        List<Email> emailList = query.setParameter("id", 1).getResultList();
+        assertThat(emailList.size(), is(1));
+        assertThat(emailList.get(0).getEmail(), equalTo(newUserDto.getEmails().get(1)));
+
+        assertThrows(NotFoundException.class, () ->
+                        userService.deleteEmail(2L, newUserDto.getEmails().get(1)),
+                "Пользователя с id 2 не существует.");
+        assertThrows(ConflictException.class, () -> userService.deleteEmail(1L, newUserDto.getEmails().get(1)),
+                "Нельзя удалять единственный email пользователя.");
     }
 }

@@ -98,7 +98,49 @@ public class UserServiceImpl implements UserService {
         checkExistingPhoneNumber(phoneNumber);
         PhoneNumber phoneNumberBeingDeleted = phoneNumberStorage.findByPhoneNumber(phoneNumber);
         checkThePhoneOwner(userId, phoneNumberBeingDeleted);
+        if (phoneNumberStorage.findAllByUserId(userId).size() == 1) {
+            throw new ConflictException("Нельзя удалять единственный номер телефона пользователя.");
+        }
         phoneNumberStorage.delete(phoneNumberBeingDeleted);
+    }
+
+    @Override
+    public UpdatedUserDto addEmail(Long userId, String email) {
+        checkNewEmail(email);
+        User user = userStorage.findById(userId)
+                .orElseThrow(() -> new NotFoundException("Пользователя с id " + userId + " не существует."));
+
+        emailStorage.save(Email.builder()
+                .user(user)
+                .email(email)
+                .build());
+
+        List<Email> emailList = emailStorage.findAllByUserId(userId);
+        return UserMapper.toUpdatedUserDtoByEmail(userId, emailList);
+    }
+
+    @Override
+    public UpdatedUserDto updateEmail(Long userId, String previousEmail, String newEmail) {
+        checkNewEmail(newEmail);
+        checkExistingEmail(previousEmail);
+        Email email = emailStorage.findByEmail(previousEmail);
+        checkTheEmailOwner(userId, email);
+        email.setEmail(newEmail);
+        emailStorage.save(email);
+        List<Email> emailList = emailStorage.findAllByUserId(userId);
+        return UserMapper.toUpdatedUserDtoByEmail(userId, emailList);
+    }
+
+    @Override
+    public void deleteEmail(Long userId, String email) {
+        checkTheExistenceOfTheUser(userId);
+        checkExistingEmail(email);
+        Email emailBeingDeleted = emailStorage.findByEmail(email);
+        checkTheEmailOwner(userId, emailBeingDeleted);
+        if (emailStorage.findAllByUserId(userId).size() == 1) {
+            throw new ConflictException("Нельзя удалять единственный email пользователя.");
+        }
+        emailStorage.delete(emailBeingDeleted);
     }
 
     public void checkNewPhoneNumber(String phoneNumber) {
@@ -132,4 +174,28 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    public void checkNewEmail(String email) {
+        if (email.isBlank()) {
+            throw new ValidationException("Email не может быть пустой строкой.");
+        }
+        if (emailStorage.existsByEmail(email)) {
+            throw new AlreadyExistsException("Email " + email + " уже используется.");
+        }
+    }
+
+    public void checkExistingEmail(String email) {
+        if (email.isBlank()) {
+            throw new ValidationException("Email не может быть пустой строкой.");
+        }
+        if (!emailStorage.existsByEmail(email)) {
+            throw new NotFoundException("Email " + email + " не найден.");
+        }
+    }
+
+    public void checkTheEmailOwner(Long userId, Email email) {
+        if (!email.getUser().getId().equals(userId)) {
+            throw new ConflictException("Пользователь с id " + userId + " не может обновить email " +
+                    email.getEmail() + " т.к. не является его владельцем.");
+        }
+    }
 }

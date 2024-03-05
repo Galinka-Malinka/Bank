@@ -7,6 +7,8 @@ import org.springframework.web.bind.annotation.*;
 import ru.develop.bank.dto.UpdatedUserDto;
 import ru.develop.bank.service.UserService;
 
+import javax.validation.constraints.Email;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping(path = "/user")
@@ -37,4 +39,29 @@ public class UserController {
         log.info("Удаление пользователем с id {} телефона {}", userId, phoneNumber);
         userService.deletePhoneNumber(userId, phoneNumber);
     }
+
+    @PostMapping("/{userId}/email")
+    public UpdatedUserDto addEmail(@PathVariable Long userId,
+                                   @RequestParam(value = "email") @Email String email) {
+        log.info("Добавление пользователю с id {} email: {}", userId, email);
+        return userService.addEmail(userId, email);
+    }
+
+    @PatchMapping("/{userId}/email")
+    public UpdatedUserDto updateEmail(@PathVariable Long userId,
+                                      @RequestParam(value = "previous") String previousEmail,
+                                      @RequestParam(value = "new") String newEmail) {
+        log.info("Обновление у пользователя с id {} email {} на {}",
+                userId, previousEmail, newEmail);
+        return userService.updateEmail(userId, previousEmail, newEmail);
+    }
+
+    @DeleteMapping("/{userId}/email")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteEmail(@PathVariable Long userId,
+                            @RequestParam(value = "email") String email) {
+        log.info("Удаление пользователем с id {} email {}", userId, email);
+        userService.deleteEmail(userId, email);
+    }
+
 }

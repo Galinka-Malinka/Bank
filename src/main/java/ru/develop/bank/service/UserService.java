@@ -13,5 +13,11 @@ public interface UserService {
 
     void deletePhoneNumber(Long userId, String phoneNumber);
 
+    UpdatedUserDto addEmail(Long userId, String email);
+
+    UpdatedUserDto updateEmail(Long userId, String previousEmail, String newEmail);
+
+    void deleteEmail(Long userId, String email);
+
 
 }
