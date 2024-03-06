@@ -1,11 +1,15 @@
 package ru.develop.bank.service;
 
-import ru.develop.bank.dto.NewUserDto;
 import ru.develop.bank.dto.UpdatedUserDto;
+import ru.develop.bank.dto.UserAfterTransfer;
+import ru.develop.bank.dto.UserDto;
+
+import java.time.LocalDate;
+import java.util.List;
 
 public interface UserService {
 
-    NewUserDto create(NewUserDto newUserDto);
+    UserDto create(UserDto userDto);
 
     UpdatedUserDto addPhoneNumber(Long userId, String phoneNumber);
 
@@ -19,5 +23,9 @@ public interface UserService {
 
     void deleteEmail(Long userId, String email);
 
+    List<UserDto> searchUsers(String name, LocalDate birthday, String phoneNumber, String email,
+                              Integer from, Integer size, String sort);
+
+    UserAfterTransfer transferOfMoneyToTheRecipient(Long userId, Long recipientId, Long sum);
 
 }

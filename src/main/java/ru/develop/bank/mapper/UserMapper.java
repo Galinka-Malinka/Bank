@@ -3,30 +3,31 @@ package ru.develop.bank.mapper;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.springframework.stereotype.Component;
-import ru.develop.bank.dto.NewUserDto;
+import ru.develop.bank.dto.UserDto;
 import ru.develop.bank.dto.UpdatedUserDto;
 import ru.develop.bank.model.Email;
 import ru.develop.bank.model.PhoneNumber;
 import ru.develop.bank.model.User;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 @Component
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class UserMapper {
 
-    public static User toUser(NewUserDto newUserDto) {
+    public static User toUser(UserDto userDto) {
         return User.builder()
-                .login(newUserDto.getLogin())
-                .name(newUserDto.getName())
-                .birthday(newUserDto.getBirthday())
-                .accountBalance(newUserDto.getAccountBalance())
+                .login(userDto.getLogin())
+                .name(userDto.getName())
+                .birthday(userDto.getBirthday())
+                .accountBalance(userDto.getAccountBalance())
                 .build();
     }
 
-    public static NewUserDto toUserDto(User user, List<String> phoneNumbers, List<String> emails) {
-        return NewUserDto.builder()
+    public static UserDto toUserDto(User user, List<String> phoneNumbers, List<String> emails) {
+        return UserDto.builder()
                 .id(user.getId())
                 .login(user.getLogin())
                 .name(user.getName())
@@ -57,5 +58,4 @@ public class UserMapper {
                 .build();
 
     }
-
 }

@@ -1,9 +1,17 @@
 package ru.develop.bank.service;
 
+import com.querydsl.core.BooleanBuilder;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import ru.develop.bank.dto.NewUserDto;
+import org.springframework.transaction.annotation.Transactional;
 import ru.develop.bank.dto.UpdatedUserDto;
+import ru.develop.bank.dto.UserAfterTransfer;
+import ru.develop.bank.dto.UserDto;
 import ru.develop.bank.exception.AlreadyExistsException;
 import ru.develop.bank.exception.ConflictException;
 import ru.develop.bank.exception.NotFoundException;
@@ -11,11 +19,14 @@ import ru.develop.bank.exception.ValidationException;
 import ru.develop.bank.mapper.UserMapper;
 import ru.develop.bank.model.Email;
 import ru.develop.bank.model.PhoneNumber;
+import ru.develop.bank.model.QUser;
 import ru.develop.bank.model.User;
 import ru.develop.bank.storage.EmailStorage;
 import ru.develop.bank.storage.PhoneNumberStorage;
 import ru.develop.bank.storage.UserStorage;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -27,25 +38,25 @@ public class UserServiceImpl implements UserService {
     private final EmailStorage emailStorage;
 
     @Override
-    public NewUserDto create(NewUserDto newUserDto) {
+    public UserDto create(UserDto userDto) {
 
-        List<String> phoneNumbers = newUserDto.getPhoneNumbers().stream().distinct().toList();
+        List<String> phoneNumbers = userDto.getPhoneNumbers().stream().distinct().toList();
         for (String phoneNumber : phoneNumbers) {
             checkNewPhoneNumber(phoneNumber);
         }
 
-        List<String> emails = newUserDto.getEmails().stream().distinct().toList();
+        List<String> emails = userDto.getEmails().stream().distinct().toList();
         for (String email : emails) {
             if (emailStorage.existsByEmail(email)) {
                 throw new AlreadyExistsException("Email " + email + " уже используется.");
             }
         }
 
-        if (userStorage.existsByLogin(newUserDto.getLogin())) {
-            throw new AlreadyExistsException("Пользователь с логином " + newUserDto.getLogin() + " уже существует.");
+        if (userStorage.existsByLogin(userDto.getLogin())) {
+            throw new AlreadyExistsException("Пользователь с логином " + userDto.getLogin() + " уже существует.");
         }
 
-        User user = userStorage.save(UserMapper.toUser(newUserDto));
+        User user = userStorage.save(UserMapper.toUser(userDto));
         phoneNumbers.forEach(p -> phoneNumberStorage.save(
                 PhoneNumber.builder()
                         .user(user)
@@ -57,7 +68,56 @@ public class UserServiceImpl implements UserService {
                         .email(e)
                         .build()
         ));
+
+        addInterest(user);
+//        Long balance = user.getAccountBalance();
+//        Thread accrualOfInterest = new Thread(new Runnable() {
+//            @Override
+//            public void run() {
+//                while (user.getAccountBalance() < (balance * 2.07)) {
+//                    try {
+//                        Thread.sleep(1000);
+//                        Long actualBalance = user.getAccountBalance();
+//                        user.setAccountBalance(actualBalance * 105 / 100);
+//
+//                    } catch (InterruptedException exception) {
+//                        Thread.currentThread().interrupt();
+//                        return;
+//                    }
+//                }
+//            }
+//        });
+//        accrualOfInterest.start();
+
+        //  user.runTask();
+
         return UserMapper.toUserDto(user, phoneNumbers, emails);
+    }
+
+    @Async
+    @Scheduled
+    public void addInterest(User user) {
+        Long firstBalance = user.getAccountBalance();
+        Thread accrualOfInterest = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (user.getAccountBalance() < (firstBalance * 2.07)) {
+                    try {
+                        System.out.println("!!!!!!!!!!!!!!!!!!!!!!!1 try !!!!!!!!!!!!!!!");
+                        Thread.sleep(1000);
+                        System.out.println("@@@@@@@@@@@@@@@@@@@222 after sleep @@@@@@@@@@@@@@@@@@@@@@2");
+                        Long actualBalance = user.getAccountBalance();
+                        user.setAccountBalance(actualBalance + actualBalance * 5 / 100);
+                        System.out.println("$$$$$$$$$$$$$$$$$$$$$$$$$" + user.getAccountBalance());
+
+                    } catch (InterruptedException exception) {
+                        Thread.currentThread().interrupt();
+                        return;
+                    }
+                }
+            }
+        });
+        accrualOfInterest.start();
     }
 
     @Override
@@ -143,6 +203,71 @@ public class UserServiceImpl implements UserService {
         emailStorage.delete(emailBeingDeleted);
     }
 
+    @Override
+    public List<UserDto> searchUsers(String name, LocalDate birthday, String phoneNumber, String email,
+                                     Integer from, Integer size, String sort) {
+        List<UserDto> userDtoList = new ArrayList<>();
+        int page = from / size;
+        Pageable sortedAndPageable;
+
+        if (sort != null && sort.equals("asc")) {
+            sortedAndPageable = PageRequest.of(page, size, Sort.by("id").ascending());
+        } else if (sort != null && sort.equals("desc")) {
+            sortedAndPageable = PageRequest.of(page, size, Sort.by("id").descending());
+        } else {
+            sortedAndPageable = PageRequest.of(page, size);
+        }
+
+        QUser user = QUser.user;
+        BooleanBuilder where = new BooleanBuilder();
+
+        if (name != null) {
+            where.and(user.name.like(name));
+        }
+        if (birthday != null) {
+            where.and(user.birthday.after(birthday));
+        }
+        if (phoneNumber != null) {
+            where.and(user.phoneNumbers.any().phoneNumber.contains(phoneNumber));
+        }
+        if (email != null) {
+            where.and(user.emails.any().email.contains(email));
+        }
+
+        Iterable<User> foundUsers = userStorage.findAll(where, sortedAndPageable);
+
+        for (User foundUser : foundUsers) {
+            List<String> phoneNumbers = phoneNumberStorage.findAllByUserId(foundUser.getId())
+                    .stream().map(PhoneNumber::getPhoneNumber).toList();
+            List<String> emails = emailStorage.findAllByUserId(foundUser.getId())
+                    .stream().map(Email::getEmail).toList();
+            userDtoList.add(UserMapper.toUserDto(foundUser, phoneNumbers, emails));
+        }
+        return userDtoList;
+    }
+
+    @Override
+    @Transactional
+    public UserAfterTransfer transferOfMoneyToTheRecipient(Long userId, Long recipientId, Long sum) {
+        User user = userStorage.findById(userId)
+                .orElseThrow(() -> new NotFoundException("Пользователя с id " + userId + " не существует."));
+        Long usersBalance = user.getAccountBalance();
+        if (sum > usersBalance) {
+            throw new ConflictException("У пользователя с id " + userId +
+                    " не хватает средств для перевода в размере " + sum);
+        }
+        User recipient = userStorage.findById(recipientId)
+                .orElseThrow(() -> new NotFoundException("Пользователя с id " + recipientId + " не существует."));
+        Long recipientsBalance = recipient.getAccountBalance();
+
+        Long usersNewBalance = usersBalance - sum;
+        user.setAccountBalance(usersNewBalance);
+        recipient.setAccountBalance(recipientsBalance + sum);
+        userStorage.save(user);
+        userStorage.save(recipient);
+        return UserAfterTransfer.builder().userId(userId).accountBalance(usersNewBalance).build();
+    }
+
     public void checkNewPhoneNumber(String phoneNumber) {
         if (phoneNumber.isBlank()) {
             throw new ValidationException("Номер телефона не может быть пустой строкой.");
@@ -199,3 +324,5 @@ public class UserServiceImpl implements UserService {
         }
     }
 }
+
+
