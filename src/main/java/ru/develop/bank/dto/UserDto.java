@@ -32,6 +32,8 @@ public class UserDto {
     @Positive
     Long accountBalance;
 
+    Long limitOfInterestAccrual;
+
     @NotNull
     List<String> phoneNumbers;
 

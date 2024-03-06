@@ -37,6 +37,10 @@ public class User {
     @Min(0)
     Long accountBalance;
 
+    @Column(name = "limit_of_interest_accrual", nullable = false)
+    @Min(0)
+    Long limitOfInterestAccrual;
+
     @OneToMany
     @JoinColumn(name = "user_id")
     @ToString.Exclude

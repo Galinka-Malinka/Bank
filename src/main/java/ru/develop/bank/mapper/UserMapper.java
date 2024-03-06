@@ -3,14 +3,13 @@ package ru.develop.bank.mapper;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.springframework.stereotype.Component;
-import ru.develop.bank.dto.UserDto;
 import ru.develop.bank.dto.UpdatedUserDto;
+import ru.develop.bank.dto.UserDto;
 import ru.develop.bank.model.Email;
 import ru.develop.bank.model.PhoneNumber;
 import ru.develop.bank.model.User;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 
 @Component
@@ -23,6 +22,7 @@ public class UserMapper {
                 .name(userDto.getName())
                 .birthday(userDto.getBirthday())
                 .accountBalance(userDto.getAccountBalance())
+                .limitOfInterestAccrual(userDto.getAccountBalance() * 207 / 100)
                 .build();
     }
 
@@ -33,6 +33,7 @@ public class UserMapper {
                 .name(user.getName())
                 .birthday(user.getBirthday())
                 .accountBalance(user.getAccountBalance())
+                .limitOfInterestAccrual(user.getLimitOfInterestAccrual())
                 .phoneNumbers(phoneNumbers.stream().toList())
                 .emails(emails.stream().toList())
                 .build();

@@ -11,12 +11,12 @@ import javax.validation.Valid;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping(path = "/user")
+@RequestMapping(path = "/admin")
 @Slf4j
 public class AdminController {
     private final UserService userService;
 
-    @PostMapping
+    @PostMapping("/user")
     @ResponseStatus(HttpStatus.CREATED)
     public UserDto createUser(@RequestBody @Valid UserDto userDto) {
         log.info("Добавление пользователя " + userDto);

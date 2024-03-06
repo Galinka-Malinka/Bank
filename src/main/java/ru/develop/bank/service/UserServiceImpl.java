@@ -5,8 +5,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.develop.bank.dto.UpdatedUserDto;
@@ -31,6 +29,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+//@EnableAsync
 public class UserServiceImpl implements UserService {
 
     private final UserStorage userStorage;
@@ -69,33 +68,11 @@ public class UserServiceImpl implements UserService {
                         .build()
         ));
 
-        addInterest(user);
-//        Long balance = user.getAccountBalance();
-//        Thread accrualOfInterest = new Thread(new Runnable() {
-//            @Override
-//            public void run() {
-//                while (user.getAccountBalance() < (balance * 2.07)) {
-//                    try {
-//                        Thread.sleep(1000);
-//                        Long actualBalance = user.getAccountBalance();
-//                        user.setAccountBalance(actualBalance * 105 / 100);
-//
-//                    } catch (InterruptedException exception) {
-//                        Thread.currentThread().interrupt();
-//                        return;
-//                    }
-//                }
-//            }
-//        });
-//        accrualOfInterest.start();
-
-        //  user.runTask();
-
         return UserMapper.toUserDto(user, phoneNumbers, emails);
     }
 
-    @Async
-    @Scheduled
+    //    @Async
+//    @Scheduled
     public void addInterest(User user) {
         Long firstBalance = user.getAccountBalance();
         Thread accrualOfInterest = new Thread(new Runnable() {
@@ -104,12 +81,12 @@ public class UserServiceImpl implements UserService {
                 while (user.getAccountBalance() < (firstBalance * 2.07)) {
                     try {
                         System.out.println("!!!!!!!!!!!!!!!!!!!!!!!1 try !!!!!!!!!!!!!!!");
-                        Thread.sleep(1000);
+                        Thread.sleep(60 * 1000);
                         System.out.println("@@@@@@@@@@@@@@@@@@@222 after sleep @@@@@@@@@@@@@@@@@@@@@@2");
                         Long actualBalance = user.getAccountBalance();
                         user.setAccountBalance(actualBalance + actualBalance * 5 / 100);
                         System.out.println("$$$$$$$$$$$$$$$$$$$$$$$$$" + user.getAccountBalance());
-
+                        userStorage.save(user);
                     } catch (InterruptedException exception) {
                         Thread.currentThread().interrupt();
                         return;

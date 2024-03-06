@@ -222,8 +222,10 @@ public class UserServiceImplTest {
     void shouldSearch() {
         UserDto userDto1 = createUser(1);
         userDto1.setId(1L);
+        userDto1.setLimitOfInterestAccrual(2070L);
         UserDto userDto2 = createUser(2);
         userDto2.setId(2L);
+        userDto2.setLimitOfInterestAccrual(2070L);
         List<UserDto> userDtoList = userService.searchUsers(userDto1.getName(), userDto1.getBirthday().minusDays(1),
                 userDto1.getPhoneNumbers().get(0), userDto1.getEmails().get(0), 0, 10, "desc");
         assertThat(userDtoList, notNullValue());

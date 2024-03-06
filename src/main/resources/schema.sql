@@ -7,7 +7,8 @@ CREATE TABLE IF NOT EXISTS users (
   login VARCHAR UNIQUE NOT NULL,
   name VARCHAR NOT NULL,
   birthday DATE NOT NULL,
-  account_balance BIGINT NOT NULL
+  account_balance BIGINT NOT NULL,
+  limit_of_interest_accrual BIGINT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS phone_numbers (
