@@ -31,4 +31,10 @@ public class ErrorHandler {
     public ErrorResponse handleConflict(final RuntimeException exception) {
         return new ErrorResponse(exception.getMessage());
     }
+
+    @ExceptionHandler(AuthException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleAuth(final RuntimeException exception) {
+        return new ErrorResponse(exception.getMessage());
+    }
 }

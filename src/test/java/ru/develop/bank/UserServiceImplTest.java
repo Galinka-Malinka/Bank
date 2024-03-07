@@ -319,6 +319,7 @@ public class UserServiceImplTest {
     public UserDto createUser(Integer n) {
         UserDto userDto = UserDto.builder()
                 .login("Login" + n)
+                .password("Password" + n)
                 .name("Name and LastName" + n)
                 .birthday(LocalDate.of(1990 + n, 01, 01))
                 .accountBalance(1000L)

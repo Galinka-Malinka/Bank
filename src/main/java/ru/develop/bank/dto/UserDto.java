@@ -22,6 +22,10 @@ public class UserDto {
 
     @NotNull
     @NotBlank
+    String password;
+
+    @NotNull
+    @NotBlank
     String name;
 
     @NotNull

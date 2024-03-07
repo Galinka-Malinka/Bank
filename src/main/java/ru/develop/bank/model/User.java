@@ -26,6 +26,8 @@ public class User {
     @Column(name = "login", nullable = false, unique = true)
     String login;
 
+    @Column(name = "password", nullable = false)
+    String password;
 
     @Column(name = "name", nullable = false)
     String name;

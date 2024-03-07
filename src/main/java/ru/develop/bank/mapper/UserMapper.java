@@ -19,6 +19,7 @@ public class UserMapper {
     public static User toUser(UserDto userDto) {
         return User.builder()
                 .login(userDto.getLogin())
+                .password(userDto.getPassword())
                 .name(userDto.getName())
                 .birthday(userDto.getBirthday())
                 .accountBalance(userDto.getAccountBalance())
@@ -30,6 +31,7 @@ public class UserMapper {
         return UserDto.builder()
                 .id(user.getId())
                 .login(user.getLogin())
+                .password(user.getPassword())
                 .name(user.getName())
                 .birthday(user.getBirthday())
                 .accountBalance(user.getAccountBalance())
