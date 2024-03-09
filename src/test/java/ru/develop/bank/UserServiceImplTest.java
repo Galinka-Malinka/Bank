@@ -14,12 +14,12 @@ import ru.develop.bank.exception.AlreadyExistsException;
 import ru.develop.bank.exception.ConflictException;
 import ru.develop.bank.exception.NotFoundException;
 import ru.develop.bank.exception.ValidationException;
-import ru.develop.bank.jwt.dto.RegisterUserDto;
-import ru.develop.bank.jwt.service.AuthenticationService;
 import ru.develop.bank.mapper.UserMapper;
 import ru.develop.bank.model.Email;
 import ru.develop.bank.model.PhoneNumber;
 import ru.develop.bank.model.User;
+import ru.develop.bank.sequrity.dto.RegisterUserDto;
+import ru.develop.bank.sequrity.service.AuthenticationService;
 import ru.develop.bank.service.UserService;
 
 import java.time.LocalDate;

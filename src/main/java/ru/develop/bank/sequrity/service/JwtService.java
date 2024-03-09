@@ -1,4 +1,4 @@
-package ru.develop.bank.jwt.service;
+package ru.develop.bank.sequrity.service;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;

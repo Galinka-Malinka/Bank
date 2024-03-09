@@ -1,4 +1,4 @@
-package ru.develop.bank.jwt.config;
+package ru.develop.bank.sequrity.config;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;

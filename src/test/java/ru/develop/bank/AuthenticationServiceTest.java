@@ -8,12 +8,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import ru.develop.bank.exception.AlreadyExistsException;
-import ru.develop.bank.jwt.dto.LoginUserDto;
-import ru.develop.bank.jwt.dto.RegisterUserDto;
-import ru.develop.bank.jwt.service.AuthenticationService;
 import ru.develop.bank.model.Email;
 import ru.develop.bank.model.PhoneNumber;
 import ru.develop.bank.model.User;
+import ru.develop.bank.sequrity.dto.LoginUserDto;
+import ru.develop.bank.sequrity.dto.RegisterUserDto;
+import ru.develop.bank.sequrity.service.AuthenticationService;
 
 import java.time.LocalDate;
 import java.util.List;

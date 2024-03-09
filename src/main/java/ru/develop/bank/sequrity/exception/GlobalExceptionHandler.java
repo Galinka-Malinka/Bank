@@ -1,4 +1,4 @@
-package ru.develop.bank.jwt.exception;
+package ru.develop.bank.sequrity.exception;
 
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.security.SignatureException;

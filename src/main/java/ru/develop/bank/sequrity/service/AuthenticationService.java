@@ -1,4 +1,4 @@
-package ru.develop.bank.jwt.service;
+package ru.develop.bank.sequrity.service;
 
 
 import lombok.RequiredArgsConstructor;
@@ -10,12 +10,12 @@ import ru.develop.bank.dto.UserDto;
 import ru.develop.bank.exception.AlreadyExistsException;
 import ru.develop.bank.exception.NotFoundException;
 import ru.develop.bank.exception.ValidationException;
-import ru.develop.bank.jwt.dto.LoginUserDto;
-import ru.develop.bank.jwt.dto.RegisterUserDto;
 import ru.develop.bank.mapper.UserMapper;
 import ru.develop.bank.model.Email;
 import ru.develop.bank.model.PhoneNumber;
 import ru.develop.bank.model.User;
+import ru.develop.bank.sequrity.dto.LoginUserDto;
+import ru.develop.bank.sequrity.dto.RegisterUserDto;
 import ru.develop.bank.storage.EmailStorage;
 import ru.develop.bank.storage.PhoneNumberStorage;
 import ru.develop.bank.storage.UserStorage;

@@ -1,4 +1,4 @@
-package ru.develop.bank.jwt.config;
+package ru.develop.bank.sequrity.config;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -14,8 +14,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-import ru.develop.bank.jwt.exception.GlobalExceptionHandler;
-import ru.develop.bank.jwt.service.JwtService;
+import ru.develop.bank.sequrity.exception.GlobalExceptionHandler;
+import ru.develop.bank.sequrity.service.JwtService;
 
 import java.io.IOException;
 

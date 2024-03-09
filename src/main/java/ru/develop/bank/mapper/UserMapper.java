@@ -5,10 +5,10 @@ import lombok.NoArgsConstructor;
 import org.springframework.stereotype.Component;
 import ru.develop.bank.dto.UpdatedUserDto;
 import ru.develop.bank.dto.UserDto;
-import ru.develop.bank.jwt.dto.RegisterUserDto;
 import ru.develop.bank.model.Email;
 import ru.develop.bank.model.PhoneNumber;
 import ru.develop.bank.model.User;
+import ru.develop.bank.sequrity.dto.RegisterUserDto;
 
 import java.util.ArrayList;
 import java.util.List;

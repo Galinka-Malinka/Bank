@@ -8,10 +8,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import ru.develop.bank.dto.UserDto;
-import ru.develop.bank.jwt.dto.RegisterUserDto;
-import ru.develop.bank.jwt.service.AuthenticationService;
 import ru.develop.bank.mapper.UserMapper;
 import ru.develop.bank.model.User;
+import ru.develop.bank.sequrity.dto.RegisterUserDto;
+import ru.develop.bank.sequrity.service.AuthenticationService;
 import ru.develop.bank.service.AccountService;
 
 import java.time.LocalDate;
