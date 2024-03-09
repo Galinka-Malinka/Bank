@@ -8,16 +8,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import ru.develop.bank.dto.UserDto;
+import ru.develop.bank.jwt.dto.RegisterUserDto;
+import ru.develop.bank.jwt.service.AuthenticationService;
+import ru.develop.bank.mapper.UserMapper;
 import ru.develop.bank.model.User;
 import ru.develop.bank.service.AccountService;
-import ru.develop.bank.service.UserService;
 
 import java.time.LocalDate;
 import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
 
 @SpringBootTest(
         properties = "db.name=test",
@@ -29,7 +31,7 @@ public class AccountServiceImplTest {
 
     private final EntityManager entityManager;
 
-    private final UserService userService;
+    private final AuthenticationService authenticationService;
 
     private final AccountService accountService;
 
@@ -38,7 +40,7 @@ public class AccountServiceImplTest {
         createUser(1);
         createUser(2);
 
-       accountService.accrueInterest();
+        accountService.accrueInterest();
 
         TypedQuery<User> query = entityManager.createQuery("Select u from User u", User.class);
         List<User> users = query.getResultList();
@@ -48,7 +50,7 @@ public class AccountServiceImplTest {
         assertThat(users.get(0).getAccountBalance(), is(1000L));
 
         try {
-            Thread.sleep(59 * 1000);
+            Thread.sleep(50 * 1000);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
@@ -58,7 +60,7 @@ public class AccountServiceImplTest {
     }
 
     public UserDto createUser(Integer n) {
-        UserDto userDto = UserDto.builder()
+        RegisterUserDto registerUserDto = RegisterUserDto.builder()
                 .login("Login" + n)
                 .password("Password" + n)
                 .name("Name and LastName" + n)
@@ -68,8 +70,7 @@ public class AccountServiceImplTest {
                 .phoneNumbers(List.of("+7999888776" + n, "+7555444332" + n))
                 .build();
 
-        userService.create(userDto);
-        userDto.setId(1L);
-        return userDto;
+        authenticationService.signup(registerUserDto);
+        return UserMapper.toUserDto(registerUserDto);
     }
 }

@@ -5,6 +5,7 @@ import lombok.NoArgsConstructor;
 import org.springframework.stereotype.Component;
 import ru.develop.bank.dto.UpdatedUserDto;
 import ru.develop.bank.dto.UserDto;
+import ru.develop.bank.jwt.dto.RegisterUserDto;
 import ru.develop.bank.model.Email;
 import ru.develop.bank.model.PhoneNumber;
 import ru.develop.bank.model.User;
@@ -16,14 +17,16 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class UserMapper {
 
-    public static User toUser(UserDto userDto) {
-        return User.builder()
-                .login(userDto.getLogin())
-                .password(userDto.getPassword())
-                .name(userDto.getName())
-                .birthday(userDto.getBirthday())
-                .accountBalance(userDto.getAccountBalance())
-                .limitOfInterestAccrual(userDto.getAccountBalance() * 207 / 100)
+    public static UserDto toUserDto(RegisterUserDto registerUserDto) {
+        return UserDto.builder()
+                .login(registerUserDto.getLogin())
+                .password(registerUserDto.getPassword())
+                .name(registerUserDto.getName())
+                .birthday(registerUserDto.getBirthday())
+                .accountBalance(registerUserDto.getAccountBalance())
+                .limitOfInterestAccrual(registerUserDto.getAccountBalance() * 207 / 100)
+                .phoneNumbers(registerUserDto.getPhoneNumbers())
+                .emails(registerUserDto.getEmails())
                 .build();
     }
 

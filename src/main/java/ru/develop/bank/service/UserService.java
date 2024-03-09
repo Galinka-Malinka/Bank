@@ -9,8 +9,6 @@ import java.util.List;
 
 public interface UserService {
 
-    UserDto create(UserDto userDto);
-
     UpdatedUserDto addPhoneNumber(Long userId, String phoneNumber);
 
     UpdatedUserDto updatePhoneNumber(Long userId, String previousPhoneNumber, String newPhoneNumber);

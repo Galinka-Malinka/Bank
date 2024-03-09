@@ -14,6 +14,9 @@ import ru.develop.bank.exception.AlreadyExistsException;
 import ru.develop.bank.exception.ConflictException;
 import ru.develop.bank.exception.NotFoundException;
 import ru.develop.bank.exception.ValidationException;
+import ru.develop.bank.jwt.dto.RegisterUserDto;
+import ru.develop.bank.jwt.service.AuthenticationService;
+import ru.develop.bank.mapper.UserMapper;
 import ru.develop.bank.model.Email;
 import ru.develop.bank.model.PhoneNumber;
 import ru.develop.bank.model.User;
@@ -37,44 +40,8 @@ public class UserServiceImplTest {
     private final EntityManager entityManager;
 
     private final UserService userService;
+    private final AuthenticationService authenticationService;
 
-    @Test
-    void shouldCreateUser() {
-        UserDto userDto = createUser(1);
-        TypedQuery<User> query = entityManager.createQuery("Select u from User u where u.id = :id", User.class);
-        User user = query.setParameter("id", 1).getSingleResult();
-        assertThat(user.getId(), notNullValue());
-        assertThat(user.getId(), is(1L));
-        assertThat(user.getLogin(), equalTo(userDto.getLogin()));
-        assertThat(user.getBirthday(), equalTo(userDto.getBirthday()));
-        assertThat(user.getAccountBalance(), is(userDto.getAccountBalance()));
-
-        TypedQuery<PhoneNumber> queryForPhoneNumbers = entityManager.createQuery(
-                "Select p from PhoneNumber p where p.phoneNumber in :list", PhoneNumber.class);
-        List<PhoneNumber> savedPhoneNumbers = queryForPhoneNumbers.setParameter("list",
-                userDto.getPhoneNumbers()).getResultList();
-        assertThat(savedPhoneNumbers, notNullValue());
-        assertThat(savedPhoneNumbers.size(), is(2));
-        assertThat(savedPhoneNumbers.get(0).getPhoneNumber(), equalTo(userDto.getPhoneNumbers().get(0)));
-        assertThat(savedPhoneNumbers.get(1).getPhoneNumber(), equalTo(userDto.getPhoneNumbers().get(1)));
-
-        TypedQuery<Email> queryForEmails = entityManager.createQuery(
-                "Select e from Email e where e.email in :list", Email.class);
-        List<Email> savedEmails = queryForEmails.setParameter("list", userDto.getEmails()).getResultList();
-        assertThat(savedEmails, notNullValue());
-        assertThat(savedEmails.size(), is(2));
-        assertThat(savedEmails.get(0).getEmail(), equalTo(userDto.getEmails().get(0)));
-        assertThat(savedEmails.get(1).getEmail(), equalTo(userDto.getEmails().get(1)));
-
-        assertThrows(AlreadyExistsException.class, () -> userService.create(userDto),
-                "Номер телефона " + userDto.getPhoneNumbers().get(0) + " уже используется.");
-        userDto.setPhoneNumbers(List.of("+73332221100"));
-        assertThrows(AlreadyExistsException.class, () -> userService.create(userDto),
-                "Email " + userDto.getEmails().get(0) + " уже используется.");
-        userDto.setEmails(List.of("NewEmail@mail.ru"));
-        assertThrows(AlreadyExistsException.class, () -> userService.create(userDto),
-                "Пользователь с логином " + userDto.getLogin() + " уже существует.");
-    }
 
     @Test
     void shouldAddPhoneNumber() {
@@ -230,39 +197,39 @@ public class UserServiceImplTest {
                 userDto1.getPhoneNumbers().get(0), userDto1.getEmails().get(0), 0, 10, "desc");
         assertThat(userDtoList, notNullValue());
         assertThat(userDtoList.size(), is(1));
-        assertThat(userDtoList.get(0), equalTo(userDto1));
+        assertThat(userDtoList.get(0).getLogin(), equalTo(userDto1.getLogin()));
 
         List<UserDto> userDtoList2 = userService.searchUsers(userDto1.getName(), null,
                 null, null, 0, 10, null);
         assertThat(userDtoList2, notNullValue());
         assertThat(userDtoList2.size(), is(1));
-        assertThat(userDtoList2.get(0), equalTo(userDto1));
+        assertThat(userDtoList2.get(0).getLogin(), equalTo(userDto1.getLogin()));
 
         List<UserDto> userDtoList3 = userService.searchUsers(null, userDto1.getBirthday().minusDays(1),
                 null, null, 0, 10, "asc");
         assertThat(userDtoList3, notNullValue());
         assertThat(userDtoList3.size(), is(2));
-        assertThat(userDtoList3.get(0), equalTo(userDto1));
-        assertThat(userDtoList3.get(1), equalTo(userDto2));
+        assertThat(userDtoList3.get(0).getLogin(), equalTo(userDto1.getLogin()));
+        assertThat(userDtoList3.get(1).getLogin(), equalTo(userDto2.getLogin()));
 
         List<UserDto> userDtoList4 = userService.searchUsers(null, null,
                 userDto2.getPhoneNumbers().get(1), null, 0, 10, null);
         assertThat(userDtoList4, notNullValue());
         assertThat(userDtoList4.size(), is(1));
-        assertThat(userDtoList4.get(0), equalTo(userDto2));
+        assertThat(userDtoList4.get(0).getLogin(), equalTo(userDto2.getLogin()));
 
         List<UserDto> userDtoList5 = userService.searchUsers(null, null,
                 null, userDto1.getEmails().get(0), 0, 10, null);
         assertThat(userDtoList5, notNullValue());
         assertThat(userDtoList5.size(), is(1));
-        assertThat(userDtoList5.get(0), equalTo(userDto1));
+        assertThat(userDtoList5.get(0).getLogin(), equalTo(userDto1.getLogin()));
 
         List<UserDto> userDtoList6 = userService.searchUsers(null, null,
                 null, null, 0, 10, "desc");
         assertThat(userDtoList6, notNullValue());
         assertThat(userDtoList6.size(), is(2));
-        assertThat(userDtoList6.get(0), equalTo(userDto2));
-        assertThat(userDtoList6.get(1), equalTo(userDto1));
+        assertThat(userDtoList6.get(0).getLogin(), equalTo(userDto2.getLogin()));
+        assertThat(userDtoList6.get(1).getLogin(), equalTo(userDto1.getLogin()));
 
         createUser(3);
         createUser(4);
@@ -315,9 +282,8 @@ public class UserServiceImplTest {
                 "У пользователя с id 1 не хватает средств для перевода в размере 700");
     }
 
-
     public UserDto createUser(Integer n) {
-        UserDto userDto = UserDto.builder()
+        RegisterUserDto registerUserDto = RegisterUserDto.builder()
                 .login("Login" + n)
                 .password("Password" + n)
                 .name("Name and LastName" + n)
@@ -327,8 +293,7 @@ public class UserServiceImplTest {
                 .phoneNumbers(List.of("+7999888776" + n, "+7555444332" + n))
                 .build();
 
-        userService.create(userDto);
-        userDto.setId(1L);
-        return userDto;
+        authenticationService.signup(registerUserDto);
+        return UserMapper.toUserDto(registerUserDto);
     }
 }

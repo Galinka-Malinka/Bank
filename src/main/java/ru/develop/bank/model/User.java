@@ -3,9 +3,13 @@ package ru.develop.bank.model;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.validation.constraints.Min;
 import java.time.LocalDate;
+import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -15,9 +19,7 @@ import java.util.Set;
 @AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class User {
-
-    //Возможно стоит добавить поле PASSWORD???
+public class User implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -53,23 +55,33 @@ public class User {
     @ToString.Exclude
     Set<Email> emails;
 
-//    public void runTask() {
-//
-//        Calendar calendar = Calendar.getInstance();
-//        LocalDateTime now = LocalDateTime.now();
-//        calendar.set(Calendar.DAY_OF_WEEK, now.getDayOfMonth());
-//        calendar.set(Calendar.HOUR_OF_DAY, now.getHour());
-//        calendar.set(Calendar.MINUTE, now.getMinute());
-//        calendar.set(Calendar.SECOND, now.getSecond());
-//
-//        Timer time = new Timer(); // Instantiate Timer Object
-//
-//        // Start running the task on Monday at 15:40:00, period is set to 8 hours
-//        // if you want to run the task immediately, set the 2nd parameter to 0
-//        Long balance = this.getAccountBalance();
-//        while (this.getAccountBalance() <= balance*2.07) {
-//            time.schedule(new CustomTask(this), calendar.getTime(), 1000);
-//        }
-//
-//    }
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return List.of();
+    }
+
+    @Override
+    public String getUsername() {
+        return login;
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return true;
+    }
 }

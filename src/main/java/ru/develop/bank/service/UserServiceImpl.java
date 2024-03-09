@@ -29,73 +29,12 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-//@EnableAsync
 public class UserServiceImpl implements UserService {
 
     private final UserStorage userStorage;
     private final PhoneNumberStorage phoneNumberStorage;
     private final EmailStorage emailStorage;
 
-    @Override
-    public UserDto create(UserDto userDto) {
-
-        List<String> phoneNumbers = userDto.getPhoneNumbers().stream().distinct().toList();
-        for (String phoneNumber : phoneNumbers) {
-            checkNewPhoneNumber(phoneNumber);
-        }
-
-        List<String> emails = userDto.getEmails().stream().distinct().toList();
-        for (String email : emails) {
-            if (emailStorage.existsByEmail(email)) {
-                throw new AlreadyExistsException("Email " + email + " уже используется.");
-            }
-        }
-
-        if (userStorage.existsByLogin(userDto.getLogin())) {
-            throw new AlreadyExistsException("Пользователь с логином " + userDto.getLogin() + " уже существует.");
-        }
-
-        User user = userStorage.save(UserMapper.toUser(userDto));
-        phoneNumbers.forEach(p -> phoneNumberStorage.save(
-                PhoneNumber.builder()
-                        .user(user)
-                        .phoneNumber(p)
-                        .build()));
-        emails.forEach(e -> emailStorage.save(
-                Email.builder()
-                        .user(user)
-                        .email(e)
-                        .build()
-        ));
-
-        return UserMapper.toUserDto(user, phoneNumbers, emails);
-    }
-
-    //    @Async
-//    @Scheduled
-    public void addInterest(User user) {
-        Long firstBalance = user.getAccountBalance();
-        Thread accrualOfInterest = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                while (user.getAccountBalance() < (firstBalance * 2.07)) {
-                    try {
-                        System.out.println("!!!!!!!!!!!!!!!!!!!!!!!1 try !!!!!!!!!!!!!!!");
-                        Thread.sleep(60 * 1000);
-                        System.out.println("@@@@@@@@@@@@@@@@@@@222 after sleep @@@@@@@@@@@@@@@@@@@@@@2");
-                        Long actualBalance = user.getAccountBalance();
-                        user.setAccountBalance(actualBalance + actualBalance * 5 / 100);
-                        System.out.println("$$$$$$$$$$$$$$$$$$$$$$$$$" + user.getAccountBalance());
-                        userStorage.save(user);
-                    } catch (InterruptedException exception) {
-                        Thread.currentThread().interrupt();
-                        return;
-                    }
-                }
-            }
-        });
-        accrualOfInterest.start();
-    }
 
     @Override
     public UpdatedUserDto addPhoneNumber(Long userId, String phoneNumber) {
